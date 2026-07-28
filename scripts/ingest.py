@@ -252,7 +252,7 @@ def _notify(alert_row: dict):
     body  = alert_row.get('headline') or ''
     areas = _areas_line(alert_row)
     if areas:
-        body = f'AFFECTED AREAS:\n{areas}\n\n{body}' if body else areas
+        body = f'{areas}\n\n{body}' if body else areas
     if alert_row.get('is_test'):
         title = f'[TEST] {title}'
 
