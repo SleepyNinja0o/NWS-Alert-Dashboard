@@ -377,6 +377,14 @@ section + section{margin-top:2rem}
   white-space:pre-wrap;font-family:inherit;font-size:.72rem;line-height:1.5;
   color:var(--muted);margin:.25rem 0 0;
 }
+.card-footer{display:flex;justify-content:flex-end;margin-top:.6rem}
+.delete-btn{
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:.25rem .6rem;border-radius:.25rem;font-size:.7rem;font-weight:600;
+  font-family:inherit;cursor:pointer;
+}
+.delete-btn:hover{border-color:#dc2626;color:#dc2626}
+.delete-btn:disabled{opacity:.5;cursor:default}
 .expires{font-size:.65rem;color:var(--muted);margin-bottom:.5rem}
 .alert-technical{margin-top:.6rem}
 .src-badges{margin-top:.4rem}
@@ -1043,7 +1051,29 @@ function card(a, active) {
     ${mapHtml(a, active)}
     ${revisionsHtml(a)}
     ${voiceHtml(a)}
+    <div class="card-footer">
+      <button class="delete-btn" onclick="deleteAlert('${esc(a.id)}', this)">Delete</button>
+    </div>
   </div>`;
+}
+
+async function deleteAlert(id, btn) {
+  if (!confirm('Delete this alert? This cannot be undone.')) return;
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${APP_BASE}/api/alerts/${encodeURIComponent(id)}`, {method: 'DELETE'});
+    if (!r.ok) {
+      btn.disabled = false;
+      alert('Failed to delete alert.');
+      return;
+    }
+    // The SSE stream re-pushes the snapshot once the DB signal fires, but
+    // remove it from the local view immediately for a snappy response.
+    render(allAlerts.filter(a => a.id !== id));
+  } catch (_) {
+    btn.disabled = false;
+    alert('Failed to delete alert.');
+  }
 }
 
 function tickCountdowns() {
@@ -1738,6 +1768,13 @@ def get_alert(alert_id):
     if not alert:
         abort(404)
     return jsonify(_with_areas(alert))
+
+
+@app.route('/api/alerts/<alert_id>', methods=['DELETE'])
+def delete_alert(alert_id):
+    if not alertdb.delete_alert(alert_id):
+        abort(404)
+    return jsonify({'ok': True})
 
 
 def _safe_path(base, filename):
