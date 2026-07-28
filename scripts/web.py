@@ -392,7 +392,7 @@ section + section{margin-top:2rem}
 .eee{font-size:.65rem;color:var(--muted);margin-bottom:.5rem;font-family:monospace}
 .header-msg{
   font-size:.75rem;color:var(--muted);margin-bottom:.75rem;
-  word-break:break-all;font-family:monospace;
+  word-break:break-all;font-family:monospace;white-space:pre-line;
 }
 .transcript-wrap{
   margin-top:.75rem;padding-top:.75rem;
@@ -415,6 +415,10 @@ section + section{margin-top:2rem}
 .src-test{border-color:#f59e0b;color:#fbbf24}
 .card.test{border-style:dashed;opacity:.85}
 .headline{font-size:.85rem;font-weight:600;margin:.5rem 0;line-height:1.4}
+.areas-line{
+  font-size:.75rem;font-weight:700;letter-spacing:.1em;
+  color:var(--muted);margin:.2rem 0;
+}
 .alert-details{margin-top:.5rem}
 .alert-details summary{
   font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
@@ -682,17 +686,23 @@ function technicalHtml(a) {
   return rows.length ? `<div class="alert-technical">${rows.join('')}</div>` : '';
 }
 
+function headlineHtml(a) {
+  const headline = (a.headline || '').trim();
+  const headDiv  = headline ? `<div class="headline">${esc(headline)}</div>` : '';
+  const areasDiv = a.areas ? `<div class="areas-line">${esc(a.areas)}</div>` : '';
+  return headDiv + areasDiv;
+}
+
 function detailsHtml(a) {
-  const head = a.headline ? `<div class="headline">${esc(a.headline)}</div>` : '';
+  const head = headlineHtml(a);
   const tech = technicalHtml(a);
   let body = '';
   if (a.description) {
     const instr = a.instruction
       ? '\n\nPRECAUTIONARY/PREPAREDNESS ACTIONS:\n\n' + a.instruction : '';
-    const areas = a.areas ? '\n\nAFFECTED AREAS:\n' + a.areas : '';
     body = `<details class="alert-details" data-fulltext="${esc(a.id)}">` +
            `<summary>Full alert text</summary>` +
-           `<pre class="alert-text">${esc(a.description + instr + areas)}</pre>` +
+           `<pre class="alert-text">${esc(a.description + instr)}</pre>` +
            tech + `</details>`;
   } else {
     // No full text panel — keep the technical header visible inline.
