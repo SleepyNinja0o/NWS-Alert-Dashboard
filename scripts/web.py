@@ -18,6 +18,7 @@ from pathlib import Path
 import html as _html
 from flask import Flask, jsonify, request, send_file, abort, Response, stream_with_context
 import alerts as alertdb
+import fips_lookup
 import push as pushdb
 
 app = Flask(__name__)
@@ -680,9 +681,10 @@ function detailsHtml(a) {
   if (a.description) {
     const instr = a.instruction
       ? '\n\nPRECAUTIONARY/PREPAREDNESS ACTIONS:\n\n' + a.instruction : '';
+    const areas = a.areas ? '\n\nAFFECTED AREAS:\n' + a.areas : '';
     body = `<details class="alert-details" data-fulltext="${esc(a.id)}">` +
            `<summary>Full alert text</summary>` +
-           `<pre class="alert-text">${esc(a.description + instr)}</pre>` +
+           `<pre class="alert-text">${esc(a.description + instr + areas)}</pre>` +
            tech + `</details>`;
   } else {
     // No full text panel — keep the technical header visible inline.
@@ -1687,12 +1689,23 @@ def status():
     })
 
 
+def _with_areas(alert: dict) -> dict:
+    """Attach 'areas' — reverse-FIPS county listing, e.g. 'KY - Clark, Madison'
+    — for the dashboard to show after the full alert text."""
+    alert['areas'] = fips_lookup.format_grouped(json.loads(alert['fips'])) if alert.get('fips') else ''
+    return alert
+
+
+def _alerts_json(limit=200):
+    return [_with_areas(a) for a in alertdb.get_alerts(limit)]
+
+
 @app.route('/events')
 def events():
     @stream_with_context
     def generate():
         # Send current snapshot immediately so the page loads with data
-        yield f'data: {json.dumps(alertdb.get_alerts(200))}\n\n'
+        yield f'data: {json.dumps(_alerts_json())}\n\n'
         try:
             last_mtime = os.path.getmtime('/tmp/alerts_updated')
         except OSError:
@@ -1707,7 +1720,7 @@ def events():
                 mtime = None
             if mtime != last_mtime:
                 last_mtime = mtime
-                yield f'data: {json.dumps(alertdb.get_alerts(200))}\n\n'
+                yield f'data: {json.dumps(_alerts_json())}\n\n'
             elif tick % 15 == 0:
                 yield 'event: ping\ndata: 1\n\n'  # keep-alive (named so the client can react)
     return Response(generate(), mimetype='text/event-stream',
@@ -1716,7 +1729,7 @@ def events():
 
 @app.route('/api/alerts')
 def list_alerts():
-    return jsonify(alertdb.get_alerts(200))
+    return jsonify(_alerts_json())
 
 
 @app.route('/api/alerts/<alert_id>')
@@ -1724,7 +1737,7 @@ def get_alert(alert_id):
     alert = alertdb.get_alert(alert_id)
     if not alert:
         abort(404)
-    return jsonify(alert)
+    return jsonify(_with_areas(alert))
 
 
 def _safe_path(base, filename):
