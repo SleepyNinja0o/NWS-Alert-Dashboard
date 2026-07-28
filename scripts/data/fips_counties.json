@@ -361,7 +361,7 @@
    "state_name": "Alaska"
   },
   "02068": {
-   "county": "Denali Borough                         (created after 1990)",
+   "county": "Denali Borough",
    "state": "AK",
    "state_name": "Alaska"
   },
@@ -436,12 +436,12 @@
    "state_name": "Alaska"
   },
   "02231": {
-   "county": "Skagway-Yakutat-Angoon Census Area         (1990 Census Area)",
+   "county": "Skagway-Yakutat-Angoon Census Area",
    "state": "AK",
    "state_name": "Alaska"
   },
   "02232": {
-   "county": "Skagway-Hoonah-Angoon Census Area          (created after 1990)",
+   "county": "Skagway-Hoonah-Angoon Census Area",
    "state": "AK",
    "state_name": "Alaska"
   },
@@ -466,7 +466,7 @@
    "state_name": "Alaska"
   },
   "02282": {
-   "county": "Yakutat Borough                       (created after 1990)",
+   "county": "Yakutat Borough",
    "state": "AK",
    "state_name": "Alaska"
   },
@@ -1247,6 +1247,11 @@
   },
   "08013": {
    "county": "Boulder County",
+   "state": "CO",
+   "state_name": "Colorado"
+  },
+  "08014": {
+   "county": "Broomfield County",
    "state": "CO",
    "state_name": "Colorado"
   },
@@ -14741,7 +14746,7 @@
    "state_name": "Virginia"
   },
   "51780": {
-   "county": "South Boston city                (After 1990, part of Halifax County)",
+   "county": "South Boston city",
    "state": "VA",
    "state_name": "Virginia"
   },
